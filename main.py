@@ -1,43 +1,38 @@
 import pygame
 import math
 from configs.config_main import *
-from colors import *
-from player import Player
 from environment.map import world_map
-from raycasting import *
+from colors import *
+from textures import texture_manager
+from player import Player
+from raycasting import cast_rays_sector  # Import the function
 
 pygame.init()
+
 surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("Grid-Based FPS Engine")
 clock = pygame.time.Clock()
+font = pygame.font.Font(None, 36)
 
 player = Player()
 
 while True:
-	for event in pygame.event.get():
-		if event.type == pygame.QUIT:
-			exit()
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            exit()
 
-	player.update_movement()
+    player.update_movement()
 
-	surface.fill(BLACK)
-	
-	# DRAW PLAYER
-	pygame.draw.rect(surface, BLACK, (0, 0, SCREEN_WIDTH, HALF_SCREEN_HEIGHT))
-	pygame.draw.rect(surface, DARKGRAY, (0, HALF_SCREEN_HEIGHT, SCREEN_WIDTH, HALF_SCREEN_HEIGHT))
+    surface.fill(BLACK)
+    
+ 
+    cast_rays_sector(surface, player.position, player.angle, NUMBER_OF_RAYS)
 
-	cast_rays_sector(surface, player.position, player.angle, NUMBER_OF_RAYS)
+    # Debug info - show grid position and direction
+    direction_names = ["North", "East", "South", "West"]
+    debug_text = f"Grid: ({player.grid_x}, {player.grid_y}) Facing: {direction_names[player.direction]}"
+    text_surface = font.render(debug_text, True, WHITE)
+    surface.blit(text_surface, (10, 10))
 
-	player_ray = (
-		player.x + SCREEN_WIDTH * math.cos(player.angle),
-		player.y + SCREEN_WIDTH * math.sin(player.angle)
-	)
-
-	#pygame.draw.circle(surface, GREEN, (int(player.x), int(player.y)), 12)
-	#pygame.draw.line(surface, GREEN, player.position, player_ray)
-
-	# DRAW MAP
-	#for x, y in world_map:
-	#	pygame.draw.rect(surface, DARKGRAY, (x, y, TILE_SIZE, TILE_SIZE), 2)
-
-	pygame.display.flip() # update display image
-	clock.tick(TARGET_FPS)
+    pygame.display.flip()
+    clock.tick(TARGET_FPS)
