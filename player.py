@@ -15,6 +15,12 @@ class Player:
         self.direction = 0  # 0=North, 1=East, 2=South, 3=West
         self.angle = DIRECTIONS[self.direction]
         
+        # Combat and map info
+        self.current_map = "dungeon_level_1"  # Track current map name
+        self.in_combat = False
+        self.health = 100
+        self.max_health = 100
+        
         # Movement timing
         self.last_move_time = 0
         self.last_turn_time = 0
@@ -27,6 +33,8 @@ class Player:
         return (self.x, self.y)
 
     def update_movement(self):
+        if self.in_combat:
+         return
         current_time = pygame.time.get_ticks()
         keys = pygame.key.get_pressed()
         
@@ -127,10 +135,16 @@ class Player:
             return self.grid_x, self.grid_y - 1
 
     def is_valid_position(self, grid_x, grid_y):
-        # Check if position is within bounds and not a wall
-        world_x = grid_x * GRID_SIZE
-        world_y = grid_y * GRID_SIZE
-        return (world_x, world_y) not in world_map
+        # Import current world_map at runtime
+        from environment.map import world_map
+        
+        # Check bounds
+        if grid_x < 0 or grid_y < 0 or grid_x >= 20 or grid_y >= 20:
+            return False
+        
+        # Check if position has a wall
+        target_tile = (grid_x * TILE_SIZE, grid_y * TILE_SIZE)
+        return target_tile not in world_map
 
     def move_to_grid(self, new_grid_x, new_grid_y):
         self.grid_x = new_grid_x
